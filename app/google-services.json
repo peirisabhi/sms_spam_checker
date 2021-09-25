@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "957713199938",
+    "project_id": "sms-spam-checker",
+    "storage_bucket": "sms-spam-checker.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:957713199938:android:58cce8dbf4aa00e97b4edb",
+        "android_client_info": {
+          "package_name": "com.abhi.sms_spam_checker"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "957713199938-7f6ie915k26lmkc71dul64dh527bft3l.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.abhi.sms_spam_checker",
+            "certificate_hash": "505865b2c3c52b80c5c1a9f90306bb9e09c541bd"
+          }
+        },
+        {
+          "client_id": "957713199938-td2emgv15ip4f7mcjgnqo6vtut4gut09.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDs8SftVEZxLzxsn2E7d1rdm6f9mE8EbHE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "957713199938-td2emgv15ip4f7mcjgnqo6vtut4gut09.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

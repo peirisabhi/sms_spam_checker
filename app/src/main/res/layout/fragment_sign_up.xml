@@ -7,19 +7,31 @@
     android:background="@color/light_gray"
     tools:context=".ui.signUp.SignUpFragment">
 
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="40dp"
+        android:layout_marginEnd="24dp"
+        android:src="@drawable/logo"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
 
     <TextView
         android:id="@+id/textView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
-        android:layout_marginTop="180dp"
+        android:layout_marginTop="32dp"
         android:text="Sign Up"
         android:textColor="@color/text_gray"
         android:textSize="28dp"
         android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@+id/imageView" />
 
 
     <TextView
@@ -50,7 +62,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
-        android:layout_marginTop="45dp"
+        android:layout_marginTop="32dp"
         android:text="Full Name"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView3" />
@@ -64,6 +76,8 @@
         android:layout_marginEnd="16dp"
         android:background="@drawable/edit_text_style"
         android:inputType="text"
+        android:paddingStart="15dp"
+        android:paddingLeft="10dp"
         android:textSize="18dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -81,14 +95,16 @@
 
 
     <EditText
-        android:id="@+id/editTextMobile"
+        android:id="@+id/editTextEmail"
         android:layout_width="0dp"
         android:layout_height="45dp"
         android:layout_marginStart="16dp"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="16dp"
         android:background="@drawable/edit_text_style"
-        android:inputType="text"
+        android:inputType="textEmailAddress"
+        android:paddingStart="15dp"
+        android:paddingLeft="10dp"
         android:textSize="18dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -102,18 +118,20 @@
         android:layout_marginTop="16dp"
         android:text="Mobile"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/editTextMobile" />
+        app:layout_constraintTop_toBottomOf="@+id/editTextEmail" />
 
 
     <EditText
-        android:id="@+id/editTextEmail"
+        android:id="@+id/editTextMobile"
         android:layout_width="0dp"
         android:layout_height="45dp"
         android:layout_marginStart="16dp"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="16dp"
         android:background="@drawable/edit_text_style"
-        android:inputType="textEmailAddress"
+        android:inputType="phone"
+        android:paddingStart="15dp"
+        android:paddingLeft="10dp"
         android:textSize="18dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -121,6 +139,7 @@
 
 te
     <com.google.android.material.button.MaterialButton
+        android:id="@+id/next_btn"
         android:layout_width="0dp"
         android:layout_height="54dp"
         android:layout_marginStart="16dp"
@@ -129,10 +148,37 @@ te
         android:backgroundTint="@color/main"
         android:text="Next"
         android:textSize="16dp"
-        app:cornerRadius="15dp"
+        app:cornerRadius="50dp"
         android:textColor="@color/white"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/editTextEmail" />
+        app:layout_constraintTop_toBottomOf="@+id/editTextMobile" />
+
+
+    <LinearLayout
+        android:id="@+id/linearLayout2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="24dp"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Already Have An Account?" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text=" Sign In"
+            android:textColor="@color/main"
+            android:textStyle="bold" />
+
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

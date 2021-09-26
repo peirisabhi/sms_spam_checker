@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "957713199938-5jqfrkt6hk291pvvd9stma3im1d3vo6p.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.abhi.sms_spam_checker",
+            "certificate_hash": "8f0a843437aa558c8d477d1ffc15d9a96fbcbbe8"
+          }
+        },
+        {
           "client_id": "957713199938-7f6ie915k26lmkc71dul64dh527bft3l.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {

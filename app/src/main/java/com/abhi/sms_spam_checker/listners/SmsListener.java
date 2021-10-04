@@ -60,54 +60,84 @@ public class SmsListener extends BroadcastReceiver {
                     fmsg= "\nSMS from "+sender+" : "+msg;
 
                     Log.e("TAG", fmsg );
-                    //Load Spam keywords in a Hashmap
 
-                    SpamWord=loadSpamWords(context);
 
-                    Pattern pattern = Pattern.compile("[\\w.]+@[\\w.]+");
-                    Matcher matcher = pattern.matcher(msg);
+                    if(containsURL(msg) != null){
 
-                    String foundEmail = "";
-
-                    while(matcher.find()){
-                        foundEmail = matcher.group();
                     }
 
-                    this.checkEmail(context);
-                    //Check if the sms is spam or not
-                    if(!isSpam(msg, sender)){
-                        this.clearAbortBroadcast();
-                    }
-                    else{
-                        Log.e("TAG", "spam found");
-
-                        try{
-                            NotificationCompat.Builder builder = new NotificationCompat.Builder(context, "c")
-                                    .setSmallIcon(R.drawable.ic_stat_name)
-                                    .setContentTitle("SPAM ALERT")
-                                    .setContentText("You have a spam sms from " + sender)
-                                    .setPriority(NotificationCompat.PRIORITY_DEFAULT);
-
-//
-//                NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-
-                            NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
-                            NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-
-// notificationId is a unique int for each notification that you must define
-                            notificationManager.notify(2, builder.build());
-
-
-                        }catch (Exception  e){
-                            Log.e("TAG", "onReceive error: " + e.getLocalizedMessage() );
-                        }
-
-
-                    }//end if else
                 }
             }
         }
     }
+
+
+
+//    public void onReceive(Context context, Intent intent) {
+//        this.abortBroadcast();
+//        if (intent.getAction() == SMS_RECEIVED) {
+//            Bundle bundle = intent.getExtras();
+//            if (bundle != null) {
+//                Object[] pdus = (Object[])bundle.get("pdus");
+//                final SmsMessage[] messages = new SmsMessage[pdus.length];
+//                String msg, sender, fmsg;
+//
+//                for (int i = 0; i < pdus.length; i++) {
+//                    messages[i] = SmsMessage.createFromPdu((byte[])pdus[i]);
+//
+//                    msg=messages[i].getMessageBody().toString()+"\n";
+//                    sender=messages[i].getOriginatingAddress().toString();
+//                    fmsg= "\nSMS from "+sender+" : "+msg;
+//
+//                    Log.e("TAG", fmsg );
+//                    //Load Spam keywords in a Hashmap
+//
+//                    SpamWord=loadSpamWords(context);
+//
+//                    Pattern pattern = Pattern.compile("[\\w.]+@[\\w.]+");
+//                    Matcher matcher = pattern.matcher(msg);
+//
+//                    String foundEmail = "";
+//
+//                    while(matcher.find()){
+//                        foundEmail = matcher.group();
+//                    }
+//
+//                    this.checkEmail(context);
+//                    //Check if the sms is spam or not
+//                    if(!isSpam(msg, sender)){
+//                        this.clearAbortBroadcast();
+//                    }
+//                    else{
+//                        Log.e("TAG", "spam found");
+//
+//                        try{
+//                            NotificationCompat.Builder builder = new NotificationCompat.Builder(context, "c")
+//                                    .setSmallIcon(R.drawable.ic_stat_name)
+//                                    .setContentTitle("SPAM ALERT")
+//                                    .setContentText("You have a spam sms from " + sender)
+//                                    .setPriority(NotificationCompat.PRIORITY_DEFAULT);
+//
+////
+////                NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+//
+//                            NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
+//                            NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+//
+//// notificationId is a unique int for each notification that you must define
+//                            notificationManager.notify(2, builder.build());
+//
+//
+//                        }catch (Exception  e){
+//                            Log.e("TAG", "onReceive error: " + e.getLocalizedMessage() );
+//                        }
+//
+//
+//                    }//end if else
+//                }
+//            }
+//        }
+//    }
 
 
     public HashMap<String, Integer> loadSpamWords(Context context)
@@ -184,25 +214,49 @@ public class SmsListener extends BroadcastReceiver {
         return flag;
     }
 
-    public boolean containsURL(String msg)
-    {
-        boolean flag=false;
-        String regex = "^(https?|ftp|file)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]";
-        StringTokenizer st= new StringTokenizer(msg);
-        String word="";
+//    public boolean containsURL(String msg)
+//    {
+//        boolean flag=false;
+//        String regex = "^(https?|ftp|file)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]";
+//        StringTokenizer st= new StringTokenizer(msg);
+//        String word="";
+//
+//        while(st.hasMoreElements())
+//        {
+//            word = st.nextElement().toString();
+//            Pattern patt = Pattern.compile(regex);
+//            Matcher matcher = patt.matcher(word);
+//            flag=matcher.matches();
+//            if(flag)
+//                break;
+//        }
+//        return flag;
+//
+//    }
 
-        while(st.hasMoreElements())
-        {
-            word = st.nextElement().toString();
-            Pattern patt = Pattern.compile(regex);
-            Matcher matcher = patt.matcher(word);
-            flag=matcher.matches();
-            if(flag)
-                break;
+    public String containsURL(String msg)
+    {
+        String re_url="((?:http|https)(?::\\/{2}[\\w]+)(?:[\\/|\\.]?)(?:[^\\s\"]*))";
+
+        String url = null;
+
+        Pattern url_pattern = Pattern.compile(re_url,Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+        Matcher matches = url_pattern.matcher(msg);
+
+        if (matches.find()) {
+            String group = matches.group(1);
+            System.out.print("Found URL!" + group);
+
+            url = group;
         }
-        return flag;
+
+        return url;
 
     }
+
+
+
+
 
     public void checkEmail(Context context){
 //        RequestQueue queue = Volley.newRequestQueue(context);
@@ -225,4 +279,10 @@ public class SmsListener extends BroadcastReceiver {
 //        queue.add(stringRequest);
 //
     }
+
+
+    void checkUrlUsingVirusTotal(String url){
+
+    }
+
 }

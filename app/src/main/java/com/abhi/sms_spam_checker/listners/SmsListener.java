@@ -10,16 +10,26 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.telephony.SmsMessage;
 import android.util.Log;
+import android.widget.Toast;
 
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 
 import com.abhi.sms_spam_checker.R;
+import com.abhi.sms_spam_checker.config.Config;
+import com.android.volley.AuthFailureError;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -61,9 +71,10 @@ public class SmsListener extends BroadcastReceiver {
 
                     Log.e("TAG", fmsg );
 
+                    String url = containsURL(msg);
 
-                    if(containsURL(msg) != null){
-
+                    if(url != null){
+                        sendVirusTotalRequest(url, context);
                     }
 
                 }
@@ -255,7 +266,44 @@ public class SmsListener extends BroadcastReceiver {
     }
 
 
+    public void sendVirusTotalRequest(String url, Context context){
 
+        System.out.println("sendVirusTotalRequest ---- ");
+
+        RequestQueue queue = Volley.newRequestQueue(context);
+
+        StringRequest stringRequest = new StringRequest(Request.Method.POST, Config.VIRUSTOTAL_CHECK_URL,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+//                        Toast.makeText(MainActivity.this,response,Toast.LENGTH_LONG).show();
+                        System.out.println("response -- " + response);
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+//                        Toast.makeText(MainActivity.this,error.toString(),Toast.LENGTH_LONG).show();
+                        System.out.println("error --- " + error);
+                    }
+                }){
+            @Override
+            protected Map<String,String> getParams(){
+                Map<String,String> params = new HashMap<String, String>();
+                params.put("x-apikey", Config.VIRUSTOTAL_API_KEY);
+                return params;
+            }
+
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                Map<String,String> params = new HashMap<String, String>();
+                params.put("x-apikey", Config.VIRUSTOTAL_API_KEY);
+                return params;
+            }
+        };
+
+        queue.add(stringRequest);
+    }
 
 
     public void checkEmail(Context context){

@@ -66,6 +66,11 @@ dependencies {
     implementation 'com.google.firebase:firebase-analytics'
     implementation 'com.google.firebase:firebase-auth:21.0.1'
 
+
+    // volley
+    implementation 'com.android.volley:volley:1.2.1'
+
+
 //
 //    // virus total api sdk
 //    implementation "com.kanishka.api:VirustotalPublicV2.0:1.0-SNAPSHOT"

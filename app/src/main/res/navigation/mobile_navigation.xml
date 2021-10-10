@@ -13,9 +13,9 @@
 
     <fragment
         android:id="@+id/navigation_dashboard"
-        android:name="com.abhi.sms_spam_checker.ui.dashboard.DashboardFragment"
+        android:name="com.abhi.sms_spam_checker.ui.contacts.ContactFragment"
         android:label="@string/title_dashboard"
-        tools:layout="@layout/fragment_dashboard" />
+        tools:layout="@layout/fragment_contact" />
 
     <fragment
         android:id="@+id/navigation_notifications"

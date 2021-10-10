@@ -1,4 +1,4 @@
-package com.abhi.sms_spam_checker.ui.dashboard;
+package com.abhi.sms_spam_checker.ui.contacts;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -12,24 +12,23 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
-import com.abhi.sms_spam_checker.R;
 import com.abhi.sms_spam_checker.databinding.FragmentDashboardBinding;
 
-public class DashboardFragment extends Fragment {
+public class ContactFragment extends Fragment {
 
-    private DashboardViewModel dashboardViewModel;
+    private ContactViewModel contactViewModel;
     private FragmentDashboardBinding binding;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        dashboardViewModel =
-                new ViewModelProvider(this).get(DashboardViewModel.class);
+        contactViewModel =
+                new ViewModelProvider(this).get(ContactViewModel.class);
 
         binding = FragmentDashboardBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
 
         final TextView textView = binding.textDashboard;
-        dashboardViewModel.getText().observe(getViewLifecycleOwner(), new Observer<String>() {
+        contactViewModel.getText().observe(getViewLifecycleOwner(), new Observer<String>() {
             @Override
             public void onChanged(@Nullable String s) {
                 textView.setText(s);

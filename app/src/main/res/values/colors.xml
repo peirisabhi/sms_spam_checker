@@ -16,6 +16,10 @@
     <color name="spamer_text_color">#8F9BB3</color>
     <color name="message_text_color">#6574CF</color>
 
+    <color name="onboard_text_heading">#222B45</color>
+    <color name="onboarding_indicator_active">#636CE3</color>
+    <color name="auth_background">#EAEFFF</color>
+
 
 
 </resources>

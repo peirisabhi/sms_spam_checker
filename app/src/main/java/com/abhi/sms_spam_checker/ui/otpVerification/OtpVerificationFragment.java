@@ -49,10 +49,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
-
-
 public class OtpVerificationFragment extends Fragment {
 
 

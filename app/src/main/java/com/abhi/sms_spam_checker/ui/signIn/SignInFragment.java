@@ -19,6 +19,7 @@ import android.widget.Toast;
 import com.abhi.sms_spam_checker.MainActivity;
 import com.abhi.sms_spam_checker.R;
 import com.abhi.sms_spam_checker.databinding.FragmentSignInBinding;
+import com.abhi.sms_spam_checker.db.UserStore;
 import com.abhi.sms_spam_checker.model.User;
 import com.abhi.sms_spam_checker.ui.signUp.SignUpFragmentDirections;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -32,12 +33,14 @@ import com.google.firebase.auth.PhoneAuthCredential;
 import com.google.firebase.auth.PhoneAuthOptions;
 import com.google.firebase.auth.PhoneAuthProvider;
 import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 
@@ -49,6 +52,11 @@ public class SignInFragment extends Fragment {
     private PhoneAuthProvider.OnVerificationStateChangedCallbacks mCallbacks;
 
     private String verifyId;
+
+    UserStore userStore;
+
+    String userDocId;
+    User loggedUser;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -72,6 +80,10 @@ public class SignInFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull @NotNull View view, @Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
+        if (userStore == null) {
+            userStore = new UserStore(getActivity());
+        }
 
         binding.linearLayout2.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -149,6 +161,20 @@ public class SignInFragment extends Fragment {
                                 public void onComplete(@NonNull @NotNull Task<QuerySnapshot> task) {
                                     if (task.isSuccessful()) {
                                         if (task.getResult().size() > 0) {
+                                            List<DocumentSnapshot> documents = task.getResult().getDocuments();
+
+                                            List<User> users = task.getResult().toObjects(User.class);
+
+                                            if (documents.iterator().hasNext()) {
+                                                userDocId = documents.iterator().next().getId();
+                                            }
+
+                                            if (users.iterator().hasNext()) {
+                                                loggedUser = users.iterator().next();
+                                            }
+
+                                            System.out.println("userDocId -- " + userDocId);
+
                                             otpSend(mobile);
                                         } else {
                                             Toast.makeText(requireContext(), "This mobile not registers. Please Register!", Toast.LENGTH_SHORT).show();
@@ -182,14 +208,18 @@ public class SignInFragment extends Fragment {
 
             @Override
             public void onVerificationFailed(FirebaseException e) {
-                Toast.makeText(requireActivity(), e.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
+
+                e.printStackTrace();
+
+
+                Toast.makeText(requireActivity(), e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
             }
 
             @Override
             public void onCodeSent(@NonNull String verificationId,
                                    @NonNull PhoneAuthProvider.ForceResendingToken token) {
                 verifyId = verificationId;
-                Toast.makeText(requireActivity(), "OTP is successfully send.", Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireActivity(), "OTP is successfully send.", Toast.LENGTH_LONG).show();
 
             }
         };
@@ -233,6 +263,20 @@ public class SignInFragment extends Fragment {
                             public void onComplete(@NonNull @NotNull Task<AuthResult> task) {
                                 if (task.isSuccessful()) {
 
+                                    userStore.open();
+                                    User user = new User();
+                                    user.setUserDocumentId(userDocId);
+
+                                    if (loggedUser != null) {
+                                        user.setEmail(loggedUser.getEmail());
+                                        user.setFullName(loggedUser.getFullName());
+                                        user.setMobile(loggedUser.getMobile());
+                                        user.setRegisteredAt(loggedUser.getRegisteredAt());
+
+                                    }
+
+                                    userStore.insertUser(user);
+                                    userStore.close();
 
                                     Intent intent = new Intent(requireActivity(), MainActivity.class);
                                     intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);

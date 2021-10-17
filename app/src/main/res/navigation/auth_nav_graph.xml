@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/auth_nav_graph"
-    app:startDestination="@id/onboardingFragment">
+    app:startDestination="@id/splashFragment">
 
     <fragment
         android:id="@+id/signUpFragment2"
@@ -29,6 +29,11 @@
             android:id="@+id/action_splashFragment_to_signInFragment"
             app:destination="@id/signInFragment"
             app:launchSingleTop="true"
+            app:popUpTo="@id/auth_nav_graph"
+            app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/action_splashFragment_to_onboardingFragment"
+            app:destination="@id/onboardingFragment"
             app:popUpTo="@id/auth_nav_graph"
             app:popUpToInclusive="true" />
     </fragment>
@@ -66,5 +71,11 @@
         android:id="@+id/onboardingFragment"
         android:name="com.abhi.sms_spam_checker.ui.onboarding.OnboardingFragment"
         android:label="fragment_onboarding"
-        tools:layout="@layout/fragment_onboarding" />
+        tools:layout="@layout/fragment_onboarding" >
+        <action
+            android:id="@+id/action_onboardingFragment_to_signInFragment"
+            app:destination="@id/signInFragment"
+            app:popUpTo="@id/auth_nav_graph"
+            app:popUpToInclusive="true" />
+    </fragment>
 </navigation>

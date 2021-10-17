@@ -18,6 +18,7 @@ import android.widget.Toast;
 
 import com.abhi.sms_spam_checker.R;
 import com.abhi.sms_spam_checker.databinding.FragmentSignUpBinding;
+import com.abhi.sms_spam_checker.db.UserStore;
 import com.abhi.sms_spam_checker.model.User;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -49,6 +50,8 @@ public class SignUpFragment extends Fragment {
 
     private FragmentSignUpBinding binding;
 
+    UserStore userStore;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -68,6 +71,10 @@ public class SignUpFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
+        if (userStore == null) {
+            userStore = new UserStore(getActivity());
+        }
 
         mAuth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();

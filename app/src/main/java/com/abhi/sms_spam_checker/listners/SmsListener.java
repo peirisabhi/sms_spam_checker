@@ -18,7 +18,9 @@ import androidx.core.app.NotificationManagerCompat;
 
 import com.abhi.sms_spam_checker.R;
 import com.abhi.sms_spam_checker.config.Config;
+import com.abhi.sms_spam_checker.db.UserStore;
 import com.abhi.sms_spam_checker.model.UrlSpam;
+import com.abhi.sms_spam_checker.model.User;
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -38,6 +40,7 @@ import org.json.JSONObject;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -57,6 +60,9 @@ public class SmsListener extends BroadcastReceiver {
     final int spam_threshhold = 0;
     HashMap<String, Integer> SpamWord = new HashMap<String, Integer>();
 
+    UserStore userStore;
+    User loggedUser;
+
 
     public SmsListener() {
     }
@@ -65,6 +71,19 @@ public class SmsListener extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         this.abortBroadcast();
+
+        if(userStore == null){
+            userStore  = new UserStore(context);
+        }
+
+        userStore.open();
+        ArrayList<User> users = userStore.getUser();
+        userStore.close();
+
+        if(users.iterator().hasNext()) {
+            loggedUser = users.iterator().next();
+        }
+
         if (intent.getAction() == SMS_RECEIVED) {
             Bundle bundle = intent.getExtras();
             if (bundle != null) {
@@ -350,7 +369,7 @@ public class SmsListener extends BroadcastReceiver {
 
                         showNotification("You have a spam sms from " + sender, context);
 
-                        saveSpamDetails("ped8xuvp7PdMuf5fU1dm", urlSpam);
+                        saveSpamDetails(loggedUser.getUserDocumentId(), urlSpam);
                     }
 
 

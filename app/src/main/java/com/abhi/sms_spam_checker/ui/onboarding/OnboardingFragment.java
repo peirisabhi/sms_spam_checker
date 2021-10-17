@@ -7,6 +7,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.NavDirections;
+import androidx.navigation.Navigation;
 import androidx.viewpager2.widget.ViewPager2;
 
 import android.view.LayoutInflater;
@@ -81,7 +83,8 @@ public class OnboardingFragment extends Fragment {
                     onboardingViewPager.setCurrentItem(onboardingViewPager.getCurrentItem() + 1);
                 }else{
 
-//                    OnboardingFragment
+                    NavDirections navDirections = OnboardingFragmentDirections.actionOnboardingFragmentToSignInFragment();
+                    Navigation.findNavController(binding.getRoot()).navigate(navDirections);
 
                 }
             }
@@ -95,33 +98,28 @@ public class OnboardingFragment extends Fragment {
 
         OnboardingItem item1 = new OnboardingItem();
         item1.setTitle("Welcome");
-        item1.setSubTitle("to DoctGo");
-        item1.setDescription("Book an appointment with a right doctor..");
-        item1.setImg(R.drawable.ic_onboarding_1);
+        item1.setSubTitle("to SPAM Checker");
+        item1.setDescription("Check your messages..");
+        item1.setImg(R.drawable.onboarding2);
 
         OnboardingItem item2 = new OnboardingItem();
-        item2.setTitle("Ask a Doctor Online");
-        item2.setSubTitle("Search Doctors");
-        item2.setDescription("Get list of best doctor nearby you..");
-        item2.setImg(R.drawable.ic_onboarding_2);
+        item2.setTitle("Filter Messages ");
+        item2.setSubTitle("Search Spamers");
+        item2.setDescription("Get list of spamers in your contacts..");
+        item2.setImg(R.drawable.onboarding1);
 
 
         OnboardingItem item3 = new OnboardingItem();
-        item3.setTitle("Physician");
-        item3.setSubTitle("on Your Doorstep");
-        item3.setDescription("Book Your Physician..");
-        item3.setImg(R.drawable.ic_onboarding_3);
+        item3.setTitle("Url Filter");
+        item3.setSubTitle("Fiter Your Url's ");
+        item3.setDescription("Check your message is there any urls..");
+        item3.setImg(R.drawable.onboarding3);
 
-        OnboardingItem item4 = new OnboardingItem();
-        item4.setTitle("Medicine");
-        item4.setSubTitle("on Your Doorstep");
-        item4.setDescription("Order Your Medicines..");
-        item4.setImg(R.drawable.ic_onboarding_4);
+
 
         onboardingItems.add(item1);
         onboardingItems.add(item2);
         onboardingItems.add(item3);
-        onboardingItems.add(item4);
 
         onboardingAdapter = new OnboardingAdapter(onboardingItems);
 

@@ -1,8 +1,9 @@
 package com.abhi.sms_spam_checker.model;
 
+import java.io.Serializable;
 import java.util.Date;
 
-public class UrlSpam {
+public class UrlSpam implements Serializable {
     Date fondedAt;
     String url;
     String senderNumber;

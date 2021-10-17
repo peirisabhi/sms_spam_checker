@@ -19,6 +19,7 @@ import com.abhi.sms_spam_checker.MainActivity;
 import com.abhi.sms_spam_checker.R;
 import com.abhi.sms_spam_checker.config.Config;
 import com.abhi.sms_spam_checker.databinding.FragmentOtpVerificationBinding;
+import com.abhi.sms_spam_checker.db.UserStore;
 import com.abhi.sms_spam_checker.model.UrlSpam;
 import com.abhi.sms_spam_checker.model.User;
 import com.android.volley.AuthFailureError;
@@ -56,6 +57,8 @@ public class OtpVerificationFragment extends Fragment {
     FragmentOtpVerificationBinding binding;
     OtpVerificationFragmentArgs args;
 
+    UserStore userStore;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -76,10 +79,13 @@ public class OtpVerificationFragment extends Fragment {
     public void onViewCreated(@NonNull @NotNull View view, @Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-//        args = OtpVerificationFragmentArgs.fromBundle(getArguments());
+        args = OtpVerificationFragmentArgs.fromBundle(getArguments());
 
         db = FirebaseFirestore.getInstance();
 
+        if (userStore == null) {
+            userStore = new UserStore(getActivity());
+        }
 
         binding.otp1.setOnKeyListener(new View.OnKeyListener() {
             @Override
@@ -196,80 +202,80 @@ public class OtpVerificationFragment extends Fragment {
     }
 
 
-    private void getVirusTotalRequestData(String requestId) {
-        RequestQueue queue = Volley.newRequestQueue(requireContext());
-
-        JSONObject jsonRequest = new JSONObject();
-        try {
-            jsonRequest.put("request_id", requestId);
-
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
-        System.out.println(jsonRequest.toString());
-
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, Config.VIRUSTOTAL_GET_DATA_URL, jsonRequest, new Response.Listener<JSONObject>() {
-            @Override
-            public void onResponse(JSONObject response) {
-                Log.i("Response", "Response is: " + response);
-                System.out.println(response);
-
-                try {
-                    int maliciousCount = response.getJSONObject("data").getJSONObject("attributes").getJSONObject("last_analysis_stats").getInt("malicious");
-                    int suspiciousCount = response.getJSONObject("data").getJSONObject("attributes").getJSONObject("last_analysis_stats").getInt("suspicious");
-                    System.out.println("maliciousCount ---- " + maliciousCount);
-                    if(maliciousCount > 0){
-                        UrlSpam urlSpam = new UrlSpam();
-                        urlSpam.setFondedAt(new Date());
-                        urlSpam.setMaliciousCount(maliciousCount);
-                        urlSpam.setRequestId(response.getJSONObject("data").getString("id"));
-                        urlSpam.setTitle(response.getJSONObject("data").getJSONObject("attributes").getString("title"));
-                        urlSpam.setUrl(response.getJSONObject("data").getJSONObject("attributes").getString("url"));
-                        urlSpam.setSenderName("aaa");
-                        urlSpam.setSenderNumber("12121212121");
-
-
-                        saveSpamDetails("ped8xuvp7PdMuf5fU1dm", urlSpam);
-                    }
-
-
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-
-
-            }
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                Log.i("Response", error.toString());
-            }
-        });
-
-        queue.add(jsonObjectRequest);
-    }
-
-
-    private void saveSpamDetails(String userDocId, UrlSpam urlSpam){
-        db.collection("users")
-                .document(userDocId)
-                .collection("url_spams")
-                .add(urlSpam)
-                .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
-                    @Override
-                    public void onSuccess(DocumentReference documentReference) {
-                        Log.d("TAG", "DocumentSnapshot added with ID: " + documentReference.getId());
-                        System.out.println("url spam saved");
-                    }
-                })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Log.w("TAG", "Error adding document", e);
-                    }
-                });
-    }
+//    private void getVirusTotalRequestData(String requestId) {
+//        RequestQueue queue = Volley.newRequestQueue(requireContext());
+//
+//        JSONObject jsonRequest = new JSONObject();
+//        try {
+//            jsonRequest.put("request_id", requestId);
+//
+//        } catch (JSONException e) {
+//            e.printStackTrace();
+//        }
+//
+//        System.out.println(jsonRequest.toString());
+//
+//        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, Config.VIRUSTOTAL_GET_DATA_URL, jsonRequest, new Response.Listener<JSONObject>() {
+//            @Override
+//            public void onResponse(JSONObject response) {
+//                Log.i("Response", "Response is: " + response);
+//                System.out.println(response);
+//
+//                try {
+//                    int maliciousCount = response.getJSONObject("data").getJSONObject("attributes").getJSONObject("last_analysis_stats").getInt("malicious");
+//                    int suspiciousCount = response.getJSONObject("data").getJSONObject("attributes").getJSONObject("last_analysis_stats").getInt("suspicious");
+//                    System.out.println("maliciousCount ---- " + maliciousCount);
+//                    if(maliciousCount > 0){
+//                        UrlSpam urlSpam = new UrlSpam();
+//                        urlSpam.setFondedAt(new Date());
+//                        urlSpam.setMaliciousCount(maliciousCount);
+//                        urlSpam.setRequestId(response.getJSONObject("data").getString("id"));
+//                        urlSpam.setTitle(response.getJSONObject("data").getJSONObject("attributes").getString("title"));
+//                        urlSpam.setUrl(response.getJSONObject("data").getJSONObject("attributes").getString("url"));
+//                        urlSpam.setSenderName("aaa");
+//                        urlSpam.setSenderNumber("12121212121");
+//
+//
+//                        saveSpamDetails("ped8xuvp7PdMuf5fU1dm", urlSpam);
+//                    }
+//
+//
+//                } catch (JSONException e) {
+//                    e.printStackTrace();
+//                }
+//
+//
+//            }
+//        }, new Response.ErrorListener() {
+//            @Override
+//            public void onErrorResponse(VolleyError error) {
+//                Log.i("Response", error.toString());
+//            }
+//        });
+//
+//        queue.add(jsonObjectRequest);
+//    }
+//
+//
+//    private void saveSpamDetails(String userDocId, UrlSpam urlSpam){
+//        db.collection("users")
+//                .document(userDocId)
+//                .collection("url_spams")
+//                .add(urlSpam)
+//                .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+//                    @Override
+//                    public void onSuccess(DocumentReference documentReference) {
+//                        Log.d("TAG", "DocumentSnapshot added with ID: " + documentReference.getId());
+//                        System.out.println("url spam saved");
+//                    }
+//                })
+//                .addOnFailureListener(new OnFailureListener() {
+//                    @Override
+//                    public void onFailure(@NonNull Exception e) {
+//                        Log.w("TAG", "Error adding document", e);
+//                    }
+//                });
+//    }
 
 
     private void verifyOtp() {
@@ -314,6 +320,11 @@ public class OtpVerificationFragment extends Fragment {
                                                 public void onSuccess(DocumentReference documentReference) {
                                                     Toast.makeText(requireContext(), "Verification Success Welcome...", Toast.LENGTH_SHORT).show();
                                                     Log.d("TAG", "DocumentSnapshot added with ID: " + documentReference.getId());
+
+                                                    user.setUserDocumentId(documentReference.getId());
+                                                    userStore.open();
+                                                    userStore.insertUser(user);
+                                                    userStore.close();
 
                                                     Intent intent = new Intent(requireActivity(), MainActivity.class);
                                                     intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);

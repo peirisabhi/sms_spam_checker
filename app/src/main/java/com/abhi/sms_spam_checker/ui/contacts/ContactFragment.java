@@ -9,20 +9,30 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
+import com.abhi.sms_spam_checker.adapter.ContactAdapter;
+import com.abhi.sms_spam_checker.adapter.SpamAdapter;
 import com.abhi.sms_spam_checker.databinding.FragmentContactBinding;
+import com.abhi.sms_spam_checker.db.AppStore;
+import com.abhi.sms_spam_checker.db.UserStore;
 import com.abhi.sms_spam_checker.model.ContactsInfo;
 import com.abhi.sms_spam_checker.model.SpamWord;
+import com.abhi.sms_spam_checker.model.UrlSpam;
+import com.abhi.sms_spam_checker.model.User;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -38,6 +48,16 @@ public class ContactFragment extends Fragment {
     private ContactViewModel contactViewModel;
     private FragmentContactBinding binding;
     FirebaseFirestore db;
+
+    UserStore userStore;
+    AppStore appStore;
+    User loggedUser;
+
+    RecyclerView contactRecycler;
+
+    private ContactAdapter contactAdapter;
+
+    List<ContactsInfo> contactsInfos = new ArrayList<>();
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -63,44 +83,98 @@ public class ContactFragment extends Fragment {
 
         db = FirebaseFirestore.getInstance();
 
-//        getContacts();
-//        readFile();
-
-        String[] textList = "congrats! congratulations! selected visit stop thanks gift card hours Don't miss Join terms apply no-cost discount lucky login customer account credit received receive buy Send ringtone text tone free sms reply mobile Accident entitled records pension pounds dollars claim msg compensation opt Txt win won uk voucher cash 150p send entry prize guaranteed urgent todays today valid draw Please message voicemail waiting call delivery immediately Dating service contacted find guess statement points private Mins video camera orange latest phone camcorder Help debt credit info government loans solution bills Naughty ring alone chat heard luv home Find secret admirer special looking 1st 2nd 3rd week top winner award awarded draw contact weekly holiday collect t&c offers offer sexy rate services plz pls good click bonus subscription charge charges charged must vouchers ".split(" ");
-
-
-        int i = 1;
-        for (String s : textList){
-            System.out.println(s);
-
-            SpamWord spamWord = new SpamWord();
-            spamWord.setId(i);
-            spamWord.setStatus(true);
-            spamWord.setWord(s);
-
-            db.collection("spam_words")
-                    .add(spamWord)
-                    .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
-                        @Override
-                        public void onSuccess(DocumentReference documentReference) {
-
-                            System.out.println("spam word saved");
-                        }
-                    })
-                    .addOnFailureListener(new OnFailureListener() {
-                        @Override
-                        public void onFailure(@NonNull Exception e) {
-                            Log.w("TAG", "Error adding document", e);
-                        }
-                    });
+        if (appStore == null) {
+            appStore = new AppStore(getActivity());
         }
 
-        i++;
+        if (userStore == null) {
+            userStore = new UserStore(getActivity());
+        }
+
+        userStore.open();
+        ArrayList<User> users = userStore.getUser();
+        userStore.close();
+
+        if (users.iterator().hasNext()) {
+            loggedUser = users.iterator().next();
+        }
+
+        contactRecycler = binding.contactRecycler;
+        contactRecycler.setHasFixedSize(true);
+        contactRecycler.setLayoutManager(new LinearLayoutManager(requireActivity()));
+
+        contactAdapter = new ContactAdapter(contactsInfos, requireActivity());
+        contactRecycler.setAdapter(contactAdapter);
+
+        checkContactAlreadyExported();
+
+//        readFile();
+
+//        String[] textList = "congrats! congratulations! selected visit stop thanks gift card hours Don't miss Join terms apply no-cost discount lucky login customer account credit received receive buy Send ringtone text tone free sms reply mobile Accident entitled records pension pounds dollars claim msg compensation opt Txt win won uk voucher cash 150p send entry prize guaranteed urgent todays today valid draw Please message voicemail waiting call delivery immediately Dating service contacted find guess statement points private Mins video camera orange latest phone camcorder Help debt credit info government loans solution bills Naughty ring alone chat heard luv home Find secret admirer special looking 1st 2nd 3rd week top winner award awarded draw contact weekly holiday collect t&c offers offer sexy rate services plz pls good click bonus subscription charge charges charged must vouchers ".split(" ");
+//
+//
+//        int i = 1;
+//        for (String s : textList){
+//            System.out.println(s);
+//
+//            SpamWord spamWord = new SpamWord();
+//            spamWord.setId(i);
+//            spamWord.setStatus(true);
+//            spamWord.setWord(s);
+//
+//            db.collection("spam_words")
+//                    .add(spamWord)
+//                    .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+//                        @Override
+//                        public void onSuccess(DocumentReference documentReference) {
+//
+//                            System.out.println("spam word saved");
+//                        }
+//                    })
+//                    .addOnFailureListener(new OnFailureListener() {
+//                        @Override
+//                        public void onFailure(@NonNull Exception e) {
+//                            Log.w("TAG", "Error adding document", e);
+//                        }
+//                    });
+//        }
+//
+//        i++;
 
     }
 
 
-    private void getContacts(){
+    private void checkContactAlreadyExported() {
+        db.collection("users")
+                .document(loggedUser.getUserDocumentId())
+                .collection("contacts")
+                .get()
+                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                    @Override
+                    public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                        List<ContactsInfo> contactsInfoList = queryDocumentSnapshots.toObjects(ContactsInfo.class);
+                        System.out.println("contactsInfoList --" + contactsInfoList.size());
+                        if (contactsInfoList.size() == 0) {
+                            exportContacts();
+                        } else {
+                            contactsInfos.clear();
+                            contactsInfos.addAll(contactsInfoList);
+                            contactAdapter.notifyDataSetChanged();
+                        }
+
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull @NotNull Exception e) {
+                        e.printStackTrace();
+                        Toast.makeText(requireContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                });
+    }
+
+
+    private void exportContacts() {
         ContentResolver contentResolver = requireActivity().getContentResolver();
         String contactId = null;
         String displayName = null;
@@ -145,33 +219,31 @@ public class ContactFragment extends Fragment {
         cursor.close();
 
 
-    }
-
-
-
-    private void readFile(){
-        try
-        {
-            File file=new File("src/main/java/com/abhi/sms_spam_checker/assets/spam_keywords.txt");    //creates a new file instance
-            FileReader fr=new FileReader(file);   //reads the file
-            BufferedReader br=new BufferedReader(fr);  //creates a buffering character input stream
-            StringBuffer sb=new StringBuffer();    //constructs a string buffer with no characters
-            String line;
-            while((line=br.readLine())!=null)
-            {
-                sb.append(line);      //appends line to string buffer
-                sb.append("\n");     //line feed
-            }
-            fr.close();    //closes the stream and release the resources
-            System.out.println("Contents of File: ");
-            System.out.println(sb.toString());   //returns a string that textually represents the object
+        for (ContactsInfo contactsInfo : contactsInfoList) {
+            db.collection("users")
+                    .document(loggedUser.getUserDocumentId())
+                    .collection("contacts")
+                    .add(contactsInfo)
+                    .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+                        @Override
+                        public void onSuccess(DocumentReference documentReference) {
+                            Log.d("TAG", "DocumentSnapshot added with ID: " + documentReference.getId());
+                            System.out.println("contact saved");
+                        }
+                    })
+                    .addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            Log.w("TAG", "Error adding document", e);
+                        }
+                    });
         }
-        catch(IOException e)
-        {
-            e.printStackTrace();
-        }
-    }
 
+        contactsInfos.clear();
+        contactsInfos.addAll(contactsInfoList);
+        contactAdapter.notifyDataSetChanged();
+
+    }
 
 
 //    private ArrayList getAllContacts() {

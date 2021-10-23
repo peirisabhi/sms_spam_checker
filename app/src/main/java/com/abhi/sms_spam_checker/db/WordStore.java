@@ -11,6 +11,8 @@ import com.abhi.sms_spam_checker.model.User;
 
 import java.util.ArrayList;
 
+import static com.abhi.sms_spam_checker.db.DBHelper.TBL_WORDS;
+
 public class WordStore {
     private DBHelper dbHelper;
     private Context context;
@@ -26,6 +28,10 @@ public class WordStore {
         return this;
     }
 
+    public void close() {
+        dbHelper.close();
+    }
+
 
     public void insertSpamWord(SpamWord spamWord) {
         database.beginTransaction();
@@ -34,7 +40,25 @@ public class WordStore {
             contentValues.put(DBHelper.SPAM_WORD, spamWord.getWord());
 
 
-            database.insert(DBHelper.TBL_WORDS, null, contentValues);
+            database.insert(TBL_WORDS, null, contentValues);
+
+            database.setTransactionSuccessful();
+
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        finally {
+            database.endTransaction();
+        }
+    }
+
+
+
+    public void deleteAllSpamWords(){
+        database.beginTransaction();
+        try {
+
+            database.execSQL("delete from " + TBL_WORDS);
 
             database.setTransactionSuccessful();
 
@@ -49,7 +73,7 @@ public class WordStore {
 
 
     public ArrayList<SpamWord> getSpamWords(){
-        String selectQuery = "SELECT  * FROM " + DBHelper.TBL_WORDS;
+        String selectQuery = "SELECT  * FROM " + TBL_WORDS;
         Cursor cursor = database.rawQuery(selectQuery,null);
         ArrayList<SpamWord> spamWords = new ArrayList<>();
 

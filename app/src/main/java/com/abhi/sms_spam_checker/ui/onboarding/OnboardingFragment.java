@@ -1,6 +1,8 @@
 package com.abhi.sms_spam_checker.ui.onboarding;
 
+import android.content.ContentResolver;
 import android.content.Intent;
+import android.database.Cursor;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -11,6 +13,8 @@ import androidx.navigation.NavDirections;
 import androidx.navigation.Navigation;
 import androidx.viewpager2.widget.ViewPager2;
 
+import android.provider.ContactsContract;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,8 +24,21 @@ import android.widget.LinearLayout;
 import com.abhi.sms_spam_checker.R;
 import com.abhi.sms_spam_checker.adapter.OnboardingAdapter;
 import com.abhi.sms_spam_checker.databinding.FragmentOnboardingBinding;
+import com.abhi.sms_spam_checker.db.UserStore;
+import com.abhi.sms_spam_checker.db.WordStore;
+import com.abhi.sms_spam_checker.model.ContactsInfo;
 import com.abhi.sms_spam_checker.model.OnboardingItem;
+import com.abhi.sms_spam_checker.model.SpamWord;
+import com.abhi.sms_spam_checker.model.UrlSpam;
+import com.abhi.sms_spam_checker.model.User;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.button.MaterialButton;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -36,6 +53,12 @@ public class OnboardingFragment extends Fragment {
     private MaterialButton onboardingActionButton;
 
     private FragmentOnboardingBinding binding;
+
+    private WordStore wordStore;
+    UserStore userStore;
+    User loggedUser;
+
+    FirebaseFirestore db = FirebaseFirestore.getInstance();
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -57,10 +80,28 @@ public class OnboardingFragment extends Fragment {
     public void onViewCreated(@NonNull @NotNull View view, @Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        if (wordStore == null) {
+            wordStore = new WordStore(getActivity());
+        }
+
+        if(userStore == null){
+            userStore  = new UserStore(getActivity());
+        }
+
+        userStore.open();
+        ArrayList<User> users = userStore.getUser();
+        userStore.close();
+
+        if(users.iterator().hasNext()) {
+            loggedUser = users.iterator().next();
+        }
+
+
         onboardingLayoutIndicator = binding.onboardingLayoutIndicator;
         onboardingActionButton = binding.buttonOnbardingAction;
 
         setUpOnboardingItems();
+        saveSpamWords();
 
         ViewPager2 onboardingViewPager = binding.onBoardingViewPager;
         onboardingViewPager.setAdapter(onboardingAdapter);
@@ -162,4 +203,37 @@ public class OnboardingFragment extends Fragment {
             onboardingActionButton.setText("Next");
         }
     }
+
+
+    private void saveSpamWords(){
+
+        db.collection("spam_words")
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull @NotNull Task<QuerySnapshot> task) {
+                        if(task.isSuccessful()){
+                            List<SpamWord> spamWords = task.getResult().toObjects(SpamWord.class);
+
+                            if(spamWords.size() > 0){
+                                wordStore.open();
+                                wordStore.deleteAllSpamWords();
+
+                                for (SpamWord  spamWord : spamWords){
+                                    wordStore.insertSpamWord(spamWord);
+                                }
+
+                                wordStore.close();
+
+                            }
+
+                        }
+                    }
+                });
+
+    }
+
+
+
+
 }

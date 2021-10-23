@@ -19,6 +19,8 @@ import androidx.core.app.NotificationManagerCompat;
 import com.abhi.sms_spam_checker.R;
 import com.abhi.sms_spam_checker.config.Config;
 import com.abhi.sms_spam_checker.db.UserStore;
+import com.abhi.sms_spam_checker.db.WordStore;
+import com.abhi.sms_spam_checker.model.SpamWord;
 import com.abhi.sms_spam_checker.model.UrlSpam;
 import com.abhi.sms_spam_checker.model.User;
 import com.android.volley.AuthFailureError;
@@ -62,6 +64,7 @@ public class SmsListener extends BroadcastReceiver {
 
     UserStore userStore;
     User loggedUser;
+    WordStore wordStore;
 
 
     public SmsListener() {
@@ -74,6 +77,10 @@ public class SmsListener extends BroadcastReceiver {
 
         if(userStore == null){
             userStore  = new UserStore(context);
+        }
+
+        if (wordStore == null) {
+            wordStore = new WordStore(context);
         }
 
         userStore.open();
@@ -99,6 +106,11 @@ public class SmsListener extends BroadcastReceiver {
                     fmsg = "\nSMS from " + sender + " : " + msg;
 
                     Log.e("TAG", fmsg);
+
+                    if(checkSpamKeyWords(msg)){
+                        showNotification("Spam Word Found On Your Messages", context);
+                    }
+
 
                     String url = containsURL(msg);
 
@@ -457,6 +469,33 @@ public class SmsListener extends BroadcastReceiver {
         } catch (Exception e) {
             Log.e("TAG", "onReceive error: " + e.getLocalizedMessage());
         }
+    }
+
+
+
+    boolean checkSpamKeyWords(String msg){
+
+        boolean isSpam = false;
+
+        wordStore.open();
+        ArrayList<SpamWord> spamWords = wordStore.getSpamWords();
+        wordStore.close();
+
+        System.out.println("spamWords.size() -- " + spamWords.size());
+
+//        String[] msgWords = msg.split(" ");
+
+//        for (String msgWord : msgWords){
+            for (SpamWord spamWord : spamWords){
+                if(msg.contains(spamWord.getWord())){
+                    System.out.println("spam word found");
+                    isSpam = true;
+                    break;
+                }
+            }
+//        }
+
+        return isSpam;
     }
 
 }

@@ -83,7 +83,7 @@ public class WordStore {
                 do{
                     SpamWord spamWord = new SpamWord();
 //                    spamWord.setId(cursor.getInt(1));
-                    spamWord.setWord(cursor.getString(1));
+                    spamWord.setWord(cursor.getString(0));
 //                    spamWord.setStatus(cursor.get(3));
 
 

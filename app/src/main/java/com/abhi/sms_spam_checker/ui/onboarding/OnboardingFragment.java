@@ -215,13 +215,18 @@ public class OnboardingFragment extends Fragment {
                         if(task.isSuccessful()){
                             List<SpamWord> spamWords = task.getResult().toObjects(SpamWord.class);
 
+                            System.out.println("spamWords --- db " + spamWords.size());
+
                             if(spamWords.size() > 0){
                                 wordStore.open();
                                 wordStore.deleteAllSpamWords();
 
                                 for (SpamWord  spamWord : spamWords){
                                     wordStore.insertSpamWord(spamWord);
+                                    System.out.println("saved --- " + spamWord.getWord());
                                 }
+
+                                System.out.println("wordStore.getSpamWords().size(); --- " + wordStore.getSpamWords().size());
 
                                 wordStore.close();
 

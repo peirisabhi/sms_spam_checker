@@ -3,6 +3,7 @@ package com.abhi.sms_spam_checker.listners;
 //import android.app.NotificationChannel;
 //import android.app.NotificationManager;
 
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -49,6 +50,8 @@ import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static android.content.Context.NOTIFICATION_SERVICE;
 
 public class SmsListener extends BroadcastReceiver {
 
@@ -449,26 +452,52 @@ public class SmsListener extends BroadcastReceiver {
 
 
     void showNotification(String message, Context context) {
-        try {
-            NotificationCompat.Builder builder = new NotificationCompat.Builder(context, "c")
-                    .setSmallIcon(R.drawable.ic_stat_name)
-                    .setContentTitle("Malicious URL Found")
-                    .setContentText(message)
-                    .setPriority(NotificationCompat.PRIORITY_DEFAULT);
-
+//        try {
+//            NotificationCompat.Builder builder = new NotificationCompat.Builder(context, "c")
+//                    .setSmallIcon(R.drawable.ic_stat_name)
+//                    .setContentTitle("Malicious URL Found")
+//                    .setContentText(message)
+//                    .setPriority(NotificationCompat.PRIORITY_DEFAULT);
 //
-//                NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+////
+////                NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+//
+//            NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
+//            NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+//
+//// notificationId is a unique int for each notification that you must define
+//            notificationManager.notify(2, builder.build());
+//
+//
+//        } catch (Exception e) {
+//            Log.e("TAG", "onReceive error: " + e.getLocalizedMessage());
+//        }
 
-            NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
-            NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-
-// notificationId is a unique int for each notification that you must define
-            notificationManager.notify(2, builder.build());
+        try {
+            NotificationManager notificationManager;
+            notificationManager = (NotificationManager) context.getSystemService(NOTIFICATION_SERVICE );
+            NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(context, default_notification_channel_id ) ;
+            mBuilder.setContentTitle("Malicious SMS Found");
+            mBuilder.setContentText(message);
+            mBuilder.setSmallIcon(R.drawable.ic_stat_name) ;
+//            mBuilder.setAutoCancel( true ) ;
+            mBuilder.setPriority(NotificationCompat.PRIORITY_HIGH);
+            if (android.os.Build.VERSION. SDK_INT >= android.os.Build.VERSION_CODES. O ) {
+                int importance = NotificationManager. IMPORTANCE_HIGH ;
+                NotificationChannel notificationChannel = new NotificationChannel( NOTIFICATION_CHANNEL_ID , "NOTIFICATION_CHANNEL_NAME" , importance) ;
+                mBuilder.setChannelId( NOTIFICATION_CHANNEL_ID ) ;
+                assert notificationManager != null;
+                notificationManager.createNotificationChannel(notificationChannel) ;
+            }
+            assert notificationManager != null;
+            notificationManager.notify(( int ) System. currentTimeMillis () , mBuilder.build()) ;
 
 
         } catch (Exception e) {
             Log.e("TAG", "onReceive error: " + e.getLocalizedMessage());
+            e.printStackTrace();
         }
+
     }
 
 

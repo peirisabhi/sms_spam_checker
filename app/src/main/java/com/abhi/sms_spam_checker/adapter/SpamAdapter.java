@@ -23,11 +23,20 @@ public class SpamAdapter extends RecyclerView.Adapter<SpamAdapter.ViewHolder> {
 
     List<UrlSpam> urlSpams;
     Context context;
+    private SpamAdapter.Listener listener;
 
 
     public SpamAdapter(List<UrlSpam> urlSpams, Context context) {
         this.urlSpams = urlSpams;
         this.context = context;
+    }
+
+    public interface Listener {
+        void cardOnClick(int position);
+    }
+
+    public void setListener(Listener listener) {
+        this.listener = listener;
     }
 
     @NonNull
@@ -44,6 +53,16 @@ public class SpamAdapter extends RecyclerView.Adapter<SpamAdapter.ViewHolder> {
     public void onBindViewHolder(@NonNull @NotNull ViewHolder holder, int position) {
         holder.contact.setText(urlSpams.get(position).getSenderNumber());
         holder.message.setText(urlSpams.get(position).getUrl());
+
+        holder.cardView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(listener !=null){
+                    listener.cardOnClick(position);
+                }
+            }
+        });
+
     }
 
     @Override

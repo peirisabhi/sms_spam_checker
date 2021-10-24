@@ -52,8 +52,8 @@ public class HomeFragment extends Fragment {
 
     private SpamAdapter spamAdapter;
 
-//    private FirestoreRecyclerAdapter<UrlSpam, SpamHolder> adapter;
-        ArrayList<UrlSpam> urlSpams = new ArrayList<>();
+    //    private FirestoreRecyclerAdapter<UrlSpam, SpamHolder> adapter;
+    ArrayList<UrlSpam> urlSpams = new ArrayList<>();
 
     UserStore userStore;
     User loggedUser;
@@ -88,7 +88,7 @@ public class HomeFragment extends Fragment {
         ArrayList<User> users = userStore.getUser();
         userStore.close();
 
-        if(users.iterator().hasNext()) {
+        if (users.iterator().hasNext()) {
             loggedUser = users.iterator().next();
         }
 
@@ -111,9 +111,8 @@ public class HomeFragment extends Fragment {
     }
 
 
-    private void loadSpams(){
+    private void loadSpams() {
 //        hud.show();
-
 
 
         spamRecycler = binding.spamRecycler;
@@ -123,12 +122,24 @@ public class HomeFragment extends Fragment {
         spamAdapter = new SpamAdapter(urlSpams, requireActivity());
         spamRecycler.setAdapter(spamAdapter);
 
+        spamAdapter.setListener(new SpamAdapter.Listener() {
+            @Override
+            public void cardOnClick(int position) {
+
+                if (urlSpams.size() != 0) {
+                    HomeFragmentDirections.ActionNavigationHomeToSpamDetailsFragment navigationHomeToSpamDetailsFragment = HomeFragmentDirections.actionNavigationHomeToSpamDetailsFragment(urlSpams.get(position));
+                    Navigation.findNavController(binding.getRoot()).navigate(navigationHomeToSpamDetailsFragment);
+                }
+
+            }
+        });
+
         db.collection("users").document(loggedUser.getUserDocumentId()).collection("url_spams")
                 .get()
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                     @Override
                     public void onComplete(@NonNull @NotNull Task<QuerySnapshot> task) {
-                        if(task.isSuccessful()){
+                        if (task.isSuccessful()) {
                             List<UrlSpam> dbUrlSpams = task.getResult().toObjects(UrlSpam.class);
 
                             System.out.println("data added");

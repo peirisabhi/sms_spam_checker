@@ -13,6 +13,8 @@ import android.telephony.SmsMessage;
 import android.util.Log;
 import android.widget.Toast;
 
+import java.io.IOException;
+
 import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
@@ -41,6 +43,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
@@ -78,8 +81,8 @@ public class SmsListener extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         this.abortBroadcast();
 
-        if(userStore == null){
-            userStore  = new UserStore(context);
+        if (userStore == null) {
+            userStore = new UserStore(context);
         }
 
         if (wordStore == null) {
@@ -90,7 +93,7 @@ public class SmsListener extends BroadcastReceiver {
         ArrayList<User> users = userStore.getUser();
         userStore.close();
 
-        if(users.iterator().hasNext()) {
+        if (users.iterator().hasNext()) {
             loggedUser = users.iterator().next();
         }
 
@@ -110,15 +113,18 @@ public class SmsListener extends BroadcastReceiver {
 
                     Log.e("TAG", fmsg);
 
-                    if(checkSpamKeyWords(msg)){
+
+                    if (checkSpamKeyWords(msg)) {
                         showNotification("Spam Word Found On Your Messages", context);
                     }
 
+                    UrlSpam urlSpam = checkPhoneNumber(sender, context);
+                    urlSpam.setFullMessage(msg);
 
                     String url = containsURL(msg);
 
                     if (url != null) {
-                        sendVirusTotalRequest(url, context, sender);
+                        sendVirusTotalRequest(url, context, sender, urlSpam);
                     }
 
                 }
@@ -300,7 +306,7 @@ public class SmsListener extends BroadcastReceiver {
     }
 
 
-    public void sendVirusTotalRequest(String url, Context context, String sender) {
+    public void sendVirusTotalRequest(String url, Context context, String sender, UrlSpam urlSpam) {
 
         System.out.println("sendVirusTotalRequest ---- ");
 
@@ -334,7 +340,7 @@ public class SmsListener extends BroadcastReceiver {
                 }
 
                 if (requestId != "") {
-                    getVirusTotalRequestData(requestId, context, sender);
+                    getVirusTotalRequestData(requestId, context, sender, urlSpam);
                 }
 
             }
@@ -349,7 +355,7 @@ public class SmsListener extends BroadcastReceiver {
     }
 
 
-    private void getVirusTotalRequestData(String requestId, Context context, String sender) {
+    private void getVirusTotalRequestData(String requestId, Context context, String sender, UrlSpam urlSpam) {
         RequestQueue queue = Volley.newRequestQueue(context);
 
         JSONObject jsonRequest = new JSONObject();
@@ -371,11 +377,18 @@ public class SmsListener extends BroadcastReceiver {
                 try {
                     int maliciousCount = response.getJSONObject("data").getJSONObject("attributes").getJSONObject("last_analysis_stats").getInt("malicious");
                     int suspiciousCount = response.getJSONObject("data").getJSONObject("attributes").getJSONObject("last_analysis_stats").getInt("suspicious");
+                    int harmlessCount = response.getJSONObject("data").getJSONObject("attributes").getJSONObject("last_analysis_stats").getInt("harmless");
+                    int undetectedCount = response.getJSONObject("data").getJSONObject("attributes").getJSONObject("last_analysis_stats").getInt("undetected");
+                    int timeoutCount = response.getJSONObject("data").getJSONObject("attributes").getJSONObject("last_analysis_stats").getInt("timeout");
                     System.out.println("maliciousCount ---- " + maliciousCount);
                     if (maliciousCount > 0) {
-                        UrlSpam urlSpam = new UrlSpam();
+
                         urlSpam.setFondedAt(new Date());
                         urlSpam.setMaliciousCount(maliciousCount);
+                        urlSpam.setSuspiciousCount(suspiciousCount);
+                        urlSpam.setHarmlessCount(harmlessCount);
+                        urlSpam.setUndetectedCount(undetectedCount);
+                        urlSpam.setTimeoutCount(timeoutCount);
                         urlSpam.setRequestId(response.getJSONObject("data").getString("id"));
                         urlSpam.setTitle(response.getJSONObject("data").getJSONObject("attributes").getString("title"));
                         urlSpam.setUrl(response.getJSONObject("data").getJSONObject("attributes").getString("url"));
@@ -475,22 +488,22 @@ public class SmsListener extends BroadcastReceiver {
 
         try {
             NotificationManager notificationManager;
-            notificationManager = (NotificationManager) context.getSystemService(NOTIFICATION_SERVICE );
-            NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(context, default_notification_channel_id ) ;
+            notificationManager = (NotificationManager) context.getSystemService(NOTIFICATION_SERVICE);
+            NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(context, default_notification_channel_id);
             mBuilder.setContentTitle("Malicious SMS Found");
             mBuilder.setContentText(message);
-            mBuilder.setSmallIcon(R.drawable.ic_stat_name) ;
+            mBuilder.setSmallIcon(R.drawable.ic_stat_name);
 //            mBuilder.setAutoCancel( true ) ;
             mBuilder.setPriority(NotificationCompat.PRIORITY_HIGH);
-            if (android.os.Build.VERSION. SDK_INT >= android.os.Build.VERSION_CODES. O ) {
-                int importance = NotificationManager. IMPORTANCE_HIGH ;
-                NotificationChannel notificationChannel = new NotificationChannel( NOTIFICATION_CHANNEL_ID , "NOTIFICATION_CHANNEL_NAME" , importance) ;
-                mBuilder.setChannelId( NOTIFICATION_CHANNEL_ID ) ;
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                int importance = NotificationManager.IMPORTANCE_HIGH;
+                NotificationChannel notificationChannel = new NotificationChannel(NOTIFICATION_CHANNEL_ID, "NOTIFICATION_CHANNEL_NAME", importance);
+                mBuilder.setChannelId(NOTIFICATION_CHANNEL_ID);
                 assert notificationManager != null;
-                notificationManager.createNotificationChannel(notificationChannel) ;
+                notificationManager.createNotificationChannel(notificationChannel);
             }
             assert notificationManager != null;
-            notificationManager.notify(( int ) System. currentTimeMillis () , mBuilder.build()) ;
+            notificationManager.notify((int) System.currentTimeMillis(), mBuilder.build());
 
 
         } catch (Exception e) {
@@ -501,8 +514,7 @@ public class SmsListener extends BroadcastReceiver {
     }
 
 
-
-    boolean checkSpamKeyWords(String msg){
+    boolean checkSpamKeyWords(String msg) {
 
         boolean isSpam = false;
 
@@ -515,16 +527,63 @@ public class SmsListener extends BroadcastReceiver {
 //        String[] msgWords = msg.split(" ");
 
 //        for (String msgWord : msgWords){
-            for (SpamWord spamWord : spamWords){
-                if(msg.contains(spamWord.getWord())){
-                    System.out.println("spam word found");
-                    isSpam = true;
-                    break;
-                }
+        for (SpamWord spamWord : spamWords) {
+            if (msg.contains(spamWord.getWord())) {
+                System.out.println("spam word found");
+                isSpam = true;
+                break;
             }
+        }
 //        }
 
         return isSpam;
     }
+
+
+    UrlSpam checkPhoneNumber(String mobile, Context context) {
+
+        UrlSpam urlSpam = new UrlSpam();
+
+        RequestQueue queue = Volley.newRequestQueue(context);
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, "https://phonevalidation.abstractapi.com/v1/?api_key=6296318abc6045e7bde6d9633c804ea7&phone="+mobile, null, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                Log.i("Response", "Response is: " + response);
+                System.out.println(response);
+
+                try {
+
+                    boolean valid = response.getBoolean("valid");
+
+                    urlSpam.setMobileValidity(response.getBoolean("valid"));
+                    urlSpam.setInternational(response.getJSONObject("format").getString("international"));
+                    urlSpam.setMobileCountry(response.getJSONObject("country").getString("name"));
+                    urlSpam.setMobileCountryCode(response.getJSONObject("country").getString("code"));
+                    urlSpam.setMobileCountryPrefix(response.getJSONObject("country").getString("prefix"));
+                    urlSpam.setMobileLocation(response.getString("location"));
+                    urlSpam.setMobileType(response.getString("type"));
+                    urlSpam.setMobileCarrier(response.getString("carrier"));
+
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
+
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.i("Response", error.toString());
+            }
+        });
+
+        queue.add(jsonObjectRequest);
+
+        return urlSpam;
+
+    }
+
 
 }

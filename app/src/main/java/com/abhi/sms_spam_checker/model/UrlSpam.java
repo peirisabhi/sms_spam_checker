@@ -27,7 +27,7 @@ public class UrlSpam implements Serializable {
     String mobileCarrier;
 
     String email;
-    boolean emailDeliverability;
+    String emailDeliverability;
     String emailQuality;
     boolean emailIsValidFormat;
     boolean emailIsFreeEmail;
@@ -223,11 +223,11 @@ public class UrlSpam implements Serializable {
         this.email = email;
     }
 
-    public boolean isEmailDeliverability() {
+    public String getEmailDeliverability() {
         return emailDeliverability;
     }
 
-    public void setEmailDeliverability(boolean emailDeliverability) {
+    public void setEmailDeliverability(String emailDeliverability) {
         this.emailDeliverability = emailDeliverability;
     }
 

@@ -63,7 +63,7 @@ public class SpamDetailsFragment extends Fragment {
             binding.mobileType.setText(args.getUrlSpam().getMobileType());
             binding.mobileCarrier.setText(args.getUrlSpam().getMobileCarrier());
             binding.email.setText(args.getUrlSpam().getEmail());
-            binding.emailDeliverability.setText(args.getUrlSpam().isEmailDeliverability() ? "True" : "False");
+            binding.emailDeliverability.setText(args.getUrlSpam().getEmailDeliverability());
             binding.email.setText(args.getUrlSpam().getEmail());
             binding.emailQuality.setText(args.getUrlSpam().getEmailQuality());
             binding.emailIsValidFormat.setText(args.getUrlSpam().isEmailIsValidFormat() ? "True" : "False");
@@ -73,6 +73,7 @@ public class SpamDetailsFragment extends Fragment {
             binding.emailIsCatchall.setText(args.getUrlSpam().isEmailIsCatchall() ? "True" : "False");
             binding.emailIsMxFound.setText(args.getUrlSpam().isEmailIsMxFound() ? "True" : "False");
             binding.emailIsSmtpValid.setText(args.getUrlSpam().isEmailIsSmtpValid() ? "True" : "False");
+            binding.fullMessage.setText(args.getUrlSpam().getFullMessage());
 
         }catch (Exception e ){
             e.printStackTrace();

@@ -121,10 +121,14 @@ public class SmsListener extends BroadcastReceiver {
                     UrlSpam urlSpam = checkPhoneNumber(sender, context);
                     urlSpam.setFullMessage(msg);
 
+                    String email = checkIsEmailAvailable(msg);
+
+                    UrlSpam urlSpam1 = checkEmail(email, context, urlSpam);
+
                     String url = containsURL(msg);
 
                     if (url != null) {
-                        sendVirusTotalRequest(url, context, sender, urlSpam);
+                        sendVirusTotalRequest(url, context, sender, urlSpam1);
                     }
 
                 }
@@ -565,6 +569,71 @@ public class SmsListener extends BroadcastReceiver {
                     urlSpam.setMobileType(response.getString("type"));
                     urlSpam.setMobileCarrier(response.getString("carrier"));
 
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
+
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.i("Response", error.toString());
+            }
+        });
+
+        queue.add(jsonObjectRequest);
+
+        return urlSpam;
+
+    }
+
+
+    String checkIsEmailAvailable (String msg){
+        System.out.println("checkIsEmailAvailable");
+        String email = null;
+
+        Matcher m = Pattern.compile("[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\\.[a-zA-Z0-9-.]+").matcher(msg);
+
+        while (m.find())
+        {
+            email = m.group();
+            System.out.println("Email Found");
+            System.out.println(m.group());
+
+        }
+
+        return email;
+
+    }
+
+
+    UrlSpam checkEmail(String email, Context context, UrlSpam urlSpam) {
+        System.out.println("checkEmail -- ");
+//        UrlSpam urlSpam = new UrlSpam();
+
+        RequestQueue queue = Volley.newRequestQueue(context);
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, "https://emailvalidation.abstractapi.com/v1/?api_key=766392062842402693cdc7a1bead8014&email="+email, null, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                Log.i("Response", "Response is: " + response);
+                System.out.println(response);
+
+                try {
+
+
+                    urlSpam.setEmail(response.getString("email"));
+                    urlSpam.setEmailDeliverability(response.getString("deliverability"));
+                    urlSpam.setEmailQuality(response.getString("quality_score"));
+                    urlSpam.setEmailIsValidFormat(response.getJSONObject("quality_score").getBoolean("value"));
+                    urlSpam.setEmailIsFreeEmail(response.getJSONObject("is_free_email").getBoolean("value"));
+                    urlSpam.setEmailIdDisposable(response.getJSONObject("is_disposable_email").getBoolean("value"));
+                    urlSpam.setEmailIsRole(response.getJSONObject("is_role_email").getBoolean("value"));
+                    urlSpam.setEmailIsCatchall(response.getJSONObject("is_catchall_email").getBoolean("value"));
+                    urlSpam.setEmailIsMxFound(response.getJSONObject("is_mx_found").getBoolean("value"));
+                    urlSpam.setEmailIsSmtpValid(response.getJSONObject("is_smtp_valid").getBoolean("value"));
 
                 } catch (JSONException e) {
                     e.printStackTrace();
